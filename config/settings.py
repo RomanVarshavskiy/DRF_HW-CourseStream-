@@ -65,6 +65,9 @@ DATABASES = {
         "PASSWORD": os.getenv("PASSWORD"),
         "HOST": os.getenv("HOST"),
         "PORT": os.getenv("PORT", default="5432"),
+        "OPTIONS": {
+            "client_encoding": "UTF8",
+        },
     }
 }
 
@@ -95,7 +98,7 @@ USE_L18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = (BASE_DIR / "static",)
+# STATICFILES_DIRS = (BASE_DIR / "static",)
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
