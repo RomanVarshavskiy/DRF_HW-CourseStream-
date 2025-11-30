@@ -26,6 +26,17 @@ class LessonSerializer(ModelSerializer):
 
 
 class LessonDetailSerializer(ModelSerializer):
+    course_info = SerializerMethodField()
+
+    def get_course_info(self, obj):
+        if not obj.course:
+            return None
+        else:
+            return {
+                "id": obj.course.id,
+                "name": obj.course.name,
+            }
+
     class Meta:
         model = Lesson
-        fields = "__all__"
+        fields = ("id", "name", "description", "preview", "video", "course_info")

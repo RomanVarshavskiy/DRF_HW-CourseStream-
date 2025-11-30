@@ -26,18 +26,21 @@ class User(AbstractBaseUser):
         return self.email
 
 
-class Payments(models.Model):
+class Payment(models.Model):
+    class PaymentMethod(models.TextChoices):
+        CASH = "cash", "Cash"
+        TRANSFER = "transfer", "Transfer"
+
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PaymentMethod.choices,
+        verbose_name="Способ оплаты",
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
     payment_date = models.DateTimeField(verbose_name="Дата оплаты", help_text="Укажи дату оплаты")
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Сумма оплаты")
-    payment_method = models.CharField(
-        max_length=20,
-        verbose_name="Способ оплаты",
-        choices=[
-            ("cash", "Cash"),
-            ("transfer", "Transfer"),
-        ],
-    )
+
     # --- ссылка на Course или Lesson ---
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
@@ -48,4 +51,4 @@ class Payments(models.Model):
         verbose_name_plural = "Платежи"
 
     def __str__(self):
-        return f"Payment by {self.user} for {self.item}"
+        return f"Payment by {self.user}  — {self.amount} for {self.item}"
