@@ -1,4 +1,6 @@
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 
@@ -22,3 +24,31 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+
+
+class Payment(models.Model):
+    class PaymentMethod(models.TextChoices):
+        CASH = "cash", "Cash"
+        TRANSFER = "transfer", "Transfer"
+
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PaymentMethod.choices,
+        verbose_name="Способ оплаты",
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
+    payment_date = models.DateTimeField(verbose_name="Дата оплаты", help_text="Укажи дату оплаты")
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Сумма оплаты")
+
+    # --- ссылка на Course или Lesson ---
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    item = GenericForeignKey("content_type", "object_id")
+
+    class Meta:
+        verbose_name = "Платеж"
+        verbose_name_plural = "Платежи"
+
+    def __str__(self):
+        return f"Payment by {self.user}  — {self.amount} for {self.item}"
