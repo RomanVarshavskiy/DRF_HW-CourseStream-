@@ -1,10 +1,11 @@
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 
-class User(AbstractBaseUser):
+class User(AbstractUser):
     username = None
 
     email = models.EmailField(unique=True, verbose_name="email", help_text="Email address")

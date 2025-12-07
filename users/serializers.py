@@ -40,16 +40,13 @@ class PaymentSerializer(ModelSerializer):
         return None
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = (
-            "id",
-            "username",
-            "email",
-            "phone",
-            "city",
-        )
+        fields = ("id", "email", "password", "phone", "city")
+        extra_kwargs = {
+            "password": {"write_only": True},
+        }
 
 
 class UserProfileSerializer(ModelSerializer):
@@ -61,13 +58,5 @@ class UserProfileSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
-            "id",
-            "username",
-            "email",
-            "phone",
-            "city",
-            "payments",
-        )
-
-        read_only_fields = ["email", "username", "payments"]
+        fields = ("id", "email", "phone", "city", "payments",)
+        read_only_fields = ["email", "payments"]
