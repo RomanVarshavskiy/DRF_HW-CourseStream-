@@ -3,137 +3,113 @@
     "model": "materials.course",
     "pk": 1,
     "fields": {
-      "name": "Python для начинающих",
+      "name": "Python Basics",
       "preview": null,
-      "description": "Базовый курс по Python."
+      "description": "Introductory Python course",
+      "owner": 1
     }
   },
   {
     "model": "materials.course",
     "pk": 2,
     "fields": {
-      "name": "Веб-разработка Django",
+      "name": "Django Web Development",
       "preview": null,
-      "description": "Создание веб-приложений на Django."
+      "description": "Build powerful web apps",
+      "owner": 1
     }
   },
   {
     "model": "materials.course",
     "pk": 3,
     "fields": {
-      "name": "Основы JavaScript",
+      "name": "Data Analysis",
       "preview": null,
-      "description": "Введение в язык JavaScript."
+      "description": "Work with data and analytics",
+      "owner": 1
     }
   },
-  {
-    "model": "materials.lesson",
-    "pk": 1,
-    "fields": {
-      "name": "Введение в Python",
-      "description": "Что такое Python и зачем он нужен.",
+
+  { "model": "materials.lesson", "pk": 1, "fields": {
+      "name": "Intro to Python",
+      "description": "",
       "preview": null,
-      "video": "https://example.com/video/python-intro",
-      "course": 1
-    }
-  },
-  {
-    "model": "materials.lesson",
-    "pk": 2,
-    "fields": {
-      "name": "Типы данных в Python",
-      "description": "Строки, числа, списки и др.",
+      "video": null,
+      "course": 1,
+      "owner": 1
+  }},
+  { "model": "materials.lesson", "pk": 2, "fields": {
+      "name": "Variables and Types",
+      "description": "",
       "preview": null,
-      "video": "https://example.com/video/python-types",
-      "course": 1
-    }
-  },
-  {
-    "model": "materials.lesson",
-    "pk": 3,
-    "fields": {
-      "name": "Условные операторы",
-      "description": "if, else, elif.",
+      "video": null,
+      "course": 1,
+      "owner": 1
+  }},
+  { "model": "materials.lesson", "pk": 3, "fields": {
+      "name": "Functions",
+      "description": "",
       "preview": null,
-      "video": "https://example.com/video/python-if",
-      "course": 1
-    }
-  },
-  {
-    "model": "materials.lesson",
-    "pk": 4,
-    "fields": {
-      "name": "Установка Django",
-      "description": "Подготовка окружения.",
+      "video": null,
+      "course": 1,
+      "owner": 1
+  }},
+
+  { "model": "materials.lesson", "pk": 4, "fields": {
+      "name": "Django Intro",
+      "description": "",
       "preview": null,
-      "video": "https://example.com/video/django-install",
-      "course": 2
-    }
-  },
-  {
-    "model": "materials.lesson",
-    "pk": 5,
-    "fields": {
-      "name": "Модели Django",
-      "description": "Создание моделей и миграций.",
+      "video": null,
+      "course": 2,
+      "owner": 1
+  }},
+  { "model": "materials.lesson", "pk": 5, "fields": {
+      "name": "Models in Django",
+      "description": "",
       "preview": null,
-      "video": "https://example.com/video/django-models",
-      "course": 2
-    }
-  },
-  {
-    "model": "materials.lesson",
-    "pk": 6,
-    "fields": {
-      "name": "Django Views",
-      "description": "Функциональные и классовые представления.",
+      "video": null,
+      "course": 2,
+      "owner": 1
+  }},
+  { "model": "materials.lesson", "pk": 6, "fields": {
+      "name": "Views and URLs",
+      "description": "",
       "preview": null,
-      "video": "https://example.com/video/django-views",
-      "course": 2
-    }
-  },
-  {
-    "model": "materials.lesson",
-    "pk": 7,
-    "fields": {
-      "name": "Шаблоны Django",
-      "description": "Работа с Django Templates.",
+      "video": null,
+      "course": 2,
+      "owner": 1
+  }},
+
+  { "model": "materials.lesson", "pk": 7, "fields": {
+      "name": "Intro to Pandas",
+      "description": "",
       "preview": null,
-      "video": "https://example.com/video/django-templates",
-      "course": 2
-    }
-  },
-  {
-    "model": "materials.lesson",
-    "pk": 8,
-    "fields": {
-      "name": "Введение в JavaScript",
-      "description": "Переменные, синтаксис, первые шаги.",
+      "video": null,
+      "course": 3,
+      "owner": 1
+  }},
+  { "model": "materials.lesson", "pk": 8, "fields": {
+      "name": "Data Cleaning",
+      "description": "",
       "preview": null,
-      "video": "https://example.com/video/js-intro",
-      "course": 3
-    }
-  },
-  {
-    "model": "materials.lesson",
-    "pk": 9,
-    "fields": {
-      "name": "Функции в JavaScript",
-      "description": "Function declaration, expression и стрелочные функции.",
+      "video": null,
+      "course": 3,
+      "owner": 1
+  }},
+  { "model": "materials.lesson", "pk": 9, "fields": {
+      "name": "Data Visualization",
+      "description": "",
       "preview": null,
-      "video": "https://example.com/video/js-functions",
-      "course": 3
-    }
-  },
-  {
-    "model": "materials.lesson",
-    "pk": 10,
-    "fields": {
-      "name": "DOM-манипуляции",
-      "description": "Работа с элементами HTML через JS.",
+      "video": null,
+      "course": 3,
+      "owner": 1
+  }},
+  { "model": "materials.lesson", "pk": 10, "fields": {
+      "name": "Final Project",
+      "description": "",
       "preview": null,
-      "video": "https://example.com/video/js-dom",
-      "course": 3
-    }
-  }
+      "video": null,
+      "course": 3,
+      "owner": 1
+  }}
 ]
