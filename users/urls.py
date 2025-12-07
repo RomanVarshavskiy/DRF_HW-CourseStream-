@@ -1,11 +1,11 @@
 from django.urls import path
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from users.apps import UsersConfig
-from users.views import PaymentListAPIView, UserListAPIView, UserRetrieveUpdateAPIView, UserCreateAPIView, \
-    UserDestroyAPIView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from users.views import (PaymentListAPIView, UserCreateAPIView, UserDestroyAPIView, UserListAPIView,
+                         UserRetrieveUpdateAPIView)
 
 app_name = UsersConfig.name
 
