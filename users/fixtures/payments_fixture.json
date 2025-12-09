@@ -1,0 +1,160 @@
+[
+  {
+    "model": "users.payment",
+    "pk": 1,
+    "fields": {
+      "payment_method": "cash",
+      "user": 1,
+      "payment_date": "2024-01-10T12:00:00Z",
+      "amount": "100.00",
+      "content_type": ["materials", "course"],
+      "object_id": 1
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 2,
+    "fields": {
+      "payment_method": "transfer",
+      "user": 1,
+      "payment_date": "2024-01-12T12:00:00Z",
+      "amount": "150.00",
+      "content_type": ["materials", "lesson"],
+      "object_id": 2
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 3,
+    "fields": {
+      "payment_method": "cash",
+      "user": 1,
+      "payment_date": "2024-01-15T12:00:00Z",
+      "amount": "200.00",
+      "content_type": ["materials", "course"],
+      "object_id": 2
+    }
+  },
+
+  {
+    "model": "users.payment",
+    "pk": 4,
+    "fields": {
+      "payment_method": "cash",
+      "user": 10,
+      "payment_date": "2024-02-01T12:00:00Z",
+      "amount": "90.00",
+      "content_type": ["materials", "lesson"],
+      "object_id": 4
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 5,
+    "fields": {
+      "payment_method": "transfer",
+      "user": 10,
+      "payment_date": "2024-02-03T12:00:00Z",
+      "amount": "120.00",
+      "content_type": ["materials", "lesson"],
+      "object_id": 5
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 6,
+    "fields": {
+      "payment_method": "cash",
+      "user": 10,
+      "payment_date": "2024-02-05T12:00:00Z",
+      "amount": "180.00",
+      "content_type": ["materials", "course"],
+      "object_id": 3
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 7,
+    "fields": {
+      "payment_method": "transfer",
+      "user": 10,
+      "payment_date": "2024-02-06T12:00:00Z",
+      "amount": "75.00",
+      "content_type": ["materials", "lesson"],
+      "object_id": 6
+    }
+  },
+
+  {
+    "model": "users.payment",
+    "pk": 8,
+    "fields": {
+      "payment_method": "cash",
+      "user": 11,
+      "payment_date": "2024-03-01T12:00:00Z",
+      "amount": "130.00",
+      "content_type": ["materials", "lesson"],
+      "object_id": 7
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 9,
+    "fields": {
+      "payment_method": "transfer",
+      "user": 11,
+      "payment_date": "2024-03-02T12:00:00Z",
+      "amount": "140.00",
+      "content_type": ["materials", "course"],
+      "object_id": 1
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 10,
+    "fields": {
+      "payment_method": "cash",
+      "user": 11,
+      "payment_date": "2024-03-05T12:00:00Z",
+      "amount": "160.00",
+      "content_type": ["materials", "lesson"],
+      "object_id": 8
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 11,
+    "fields": {
+      "payment_method": "cash",
+      "user": 11,
+      "payment_date": "2024-03-06T12:00:00Z",
+      "amount": "170.00",
+      "content_type": ["materials", "lesson"],
+      "object_id": 9
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 12,
+    "fields": {
+      "payment_method": "transfer",
+      "user": 11,
+      "payment_date": "2024-03-10T12:00:00Z",
+      "amount": "190.00",
+      "content_type": ["materials", "course"],
+      "object_id": 3
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 13,
+    "fields": {
+      "payment_method": "cash",
+      "user": 11,
+      "payment_date": "2024-03-11T12:00:00Z",
+      "amount": "210.00",
+      "content_type": ["materials", "lesson"],
+      "object_id": 10
+    }
+  }
+]

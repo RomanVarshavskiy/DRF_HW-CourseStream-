@@ -7,14 +7,10 @@ class Command(BaseCommand):
     help = "Создаёт администратора-суперпользователя с предопределёнными данными."
 
     def handle(self, *args, **options):
-        user = User.objects.create(
-            email="admin@example.com",
-            first_name="Admin",
-            last_name="Adminov",
-        )
+        user = User.objects.create(email="admin@example.com")
         user.set_password("1234admin")
-        user.is_active = True
         user.is_staff = True
+        user.is_active = True
         user.is_superuser = True
         user.save()
 
