@@ -14,6 +14,8 @@ psycopg2-binary = "^2.9.11"
 pillow = "^12.0.0"
 faker = "^38.2.0"
 django-filter = "^25.2"
+djangorestframework-simplejwt = "^5.5.1"
+ipython = "^9.8.0"
 
 
 [tool.poetry.group.lint.dependencies]

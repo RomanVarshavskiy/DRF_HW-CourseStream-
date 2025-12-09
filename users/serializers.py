@@ -40,34 +40,26 @@ class PaymentSerializer(ModelSerializer):
         return None
 
 
-class UserSerializer(serializers.ModelSerializer):
+class PublicUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = (
-            "id",
-            "username",
-            "email",
-            "phone",
-            "city",
-        )
+        fields = ("id", "email", "phone", "city")
 
 
-class UserProfileSerializer(ModelSerializer):
+class PrivateUserSerializer(serializers.ModelSerializer):
     payments = serializers.SerializerMethodField()
 
-    def get_payments(self, obj):
-        user_payments = obj.payment_set.all()
-        return PaymentSerializer(user_payments, many=True).data
-
     class Meta:
         model = User
         fields = (
             "id",
-            "username",
             "email",
             "phone",
             "city",
             "payments",
         )
+        read_only_fields = ["email", "payments"]
 
-        read_only_fields = ["email", "username", "payments"]
+    def get_payments(self, obj):
+        user_payments = obj.payment_set.all()
+        return PaymentSerializer(user_payments, many=True).data
