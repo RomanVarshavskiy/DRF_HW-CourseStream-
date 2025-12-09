@@ -37,5 +37,17 @@
       "is_staff": false,
       "is_active": true
     }
-  }
+  },
+  {
+    "model": "users.user",
+    "pk": 6,
+    "fields": {
+      "email": "moder@example.com",
+      "password": "pbkdf2_sha256$261111$dummy$dummyhash",
+      "phone": "null",
+      "city": "null",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
 ]

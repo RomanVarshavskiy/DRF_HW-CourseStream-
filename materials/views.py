@@ -17,9 +17,9 @@ class CourseViewSet(ModelViewSet):
         course.save()
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name="owners").exists():
-            return Course.objects.filter(owner=self.request.user)
-        return Course.objects.all()
+        if self.request.user.is_superuser or self.request.user.groups.filter(name="moders").exists():
+            return Course.objects.all()
+        return Course.objects.filter(owner=self.request.user)
 
     def get_permissions(self):
         if self.action == "create":
@@ -49,7 +49,7 @@ class LessonListAPIView(ListAPIView):
     serializer_class = LessonSerializer
 
     def get_queryset(self):
-        if not self.request.user.groups.filter(name="owners").exists():
+        if  self.request.user.is_superuser or self.request.user.groups.filter(name="moders").exists():
             return Lesson.objects.all()
         return Lesson.objects.filter(owner=self.request.user)
 
