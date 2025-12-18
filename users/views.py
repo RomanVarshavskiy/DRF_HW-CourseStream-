@@ -39,11 +39,12 @@ class UserRetrieveAPIView(RetrieveAPIView):
 class UserUpdateAPIView(UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = PrivateUserSerializer
-    permissions_classes = (IsSelfOrAdmin,)
+    permission_classes = (IsSelfOrAdmin,)
 
 
 class UserDestroyAPIView(DestroyAPIView):
     queryset = User.objects.all()
+    permission_classes = (IsSelfOrAdmin,)
 
 
 class PaymentListAPIView(ListAPIView):

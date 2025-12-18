@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import SET_NULL
 
 from users.models import User
 
@@ -10,7 +9,7 @@ class Course(models.Model):
         upload_to="materials/preview", blank=True, null=True, verbose_name="preview", help_text="Загрузите картинку"
     )
     description = models.TextField(blank=True, null=True, verbose_name="description", help_text="Укажите описание")
-    owner = models.ForeignKey(User, on_delete=SET_NULL, blank=True, null=True, verbose_name="owner")
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="owner")
 
     class Meta:
         verbose_name = "Курс"
@@ -33,7 +32,7 @@ class Lesson(models.Model):
         Course, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="course", help_text="Укажите курс"
     )
     owner = models.ForeignKey(
-        User, on_delete=SET_NULL, blank=True, null=True, verbose_name="owner", help_text="Укажите владельца"
+        User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="owner", help_text="Укажите владельца"
     )
 
     class Meta:
@@ -42,3 +41,28 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        verbose_name="subscription",
+        related_name="subscriptions",
+    )
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, blank=True, null=True, verbose_name="course", related_name="subscriptions"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="created_at")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="update_at")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ("user", "course")
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+
+    def __str__(self):
+        return f"{self.user} - {self.course}"
