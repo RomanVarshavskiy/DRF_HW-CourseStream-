@@ -23,7 +23,6 @@ class CourseSerializer(serializers.ModelSerializer):
             return Subscription.objects.filter(user=request.user, course=course).exists()
         return False
 
-
     class Meta:
         model = Course
         fields = "__all__"
@@ -52,4 +51,3 @@ class LessonDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ("id", "name", "description", "preview", "video", "course_info")
-

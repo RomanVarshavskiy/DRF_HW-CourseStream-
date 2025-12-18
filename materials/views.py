@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.generics import (CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView,
                                      get_object_or_404)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -53,7 +54,6 @@ class LessonListAPIView(ListAPIView):
     serializer_class = LessonSerializer
     pagination_class = CustomPagination
 
-
     def get_queryset(self):
         if self.request.user.is_superuser or self.request.user.groups.filter(name="moders").exists():
             return Lesson.objects.all()
@@ -78,6 +78,7 @@ class LessonDestroyAPIView(DestroyAPIView):
 
 
 class SubscriptionAPIView(CreateAPIView):
+    # permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         user = request.user
