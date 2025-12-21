@@ -1,4 +1,5 @@
 from django.utils.decorators import method_decorator
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.generics import (CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView,
                                      get_object_or_404)
@@ -10,7 +11,7 @@ from materials.models import Course, Lesson, Subscription
 from materials.paginators import CustomPagination
 from materials.serializers import CourseSerializer, LessonDetailSerializer, LessonSerializer
 from users.permissions import IsModer, IsOwner
-from drf_spectacular.utils import extend_schema, OpenApiResponse, extend_schema_view
+
 
 @extend_schema(tags=["Курсы"])
 @extend_schema_view(
@@ -56,9 +57,8 @@ class CourseViewSet(ModelViewSet):
             self.permission_classes = (IsOwner,)
         return super().get_permissions()
 
-@extend_schema(
-    tags=["Уроки"]
-)
+
+@extend_schema(tags=["Уроки"])
 class LessonCreateAPIView(CreateAPIView):
     """Создание нового урока."""
 
@@ -70,10 +70,8 @@ class LessonCreateAPIView(CreateAPIView):
         lesson.owner = self.request.user
         lesson.save()
 
-@extend_schema(
-    tags=["Уроки"],
-    description="Список уроков с учётом прав доступа пользователя"
-)
+
+@extend_schema(tags=["Уроки"], description="Список уроков с учётом прав доступа пользователя")
 class LessonListAPIView(ListAPIView):
     """Получение списка уроков."""
 
@@ -86,9 +84,8 @@ class LessonListAPIView(ListAPIView):
             return Lesson.objects.all()
         return Lesson.objects.filter(owner=self.request.user)
 
-@extend_schema(
-    tags=["Уроки"]
-)
+
+@extend_schema(tags=["Уроки"])
 class LessonRetrieveAPIView(RetrieveAPIView):
     """Получение детальной информации об уроке."""
 
@@ -96,9 +93,8 @@ class LessonRetrieveAPIView(RetrieveAPIView):
     serializer_class = LessonDetailSerializer
     permission_classes = (IsModer | IsOwner,)
 
-@extend_schema(
-    tags=["Уроки"]
-)
+
+@extend_schema(tags=["Уроки"])
 class LessonUpdateAPIView(UpdateAPIView):
     """Обновление данных урока."""
 
@@ -106,10 +102,8 @@ class LessonUpdateAPIView(UpdateAPIView):
     serializer_class = LessonSerializer
     permission_classes = (IsModer | IsOwner,)
 
-@extend_schema(
-    tags=["Уроки"],
-    description="Удаление урока (доступно только владельцу)"
-)
+
+@extend_schema(tags=["Уроки"], description="Удаление урока (доступно только владельцу)")
 class LessonDestroyAPIView(DestroyAPIView):
     """Удаление урока."""
 
@@ -118,29 +112,25 @@ class LessonDestroyAPIView(DestroyAPIView):
 
 
 @extend_schema(
-        tags=["Подписки"],
-        description="Добавляет или удаляет подписку текущего пользователя на курс.",
-        request={
-            "application/json": {
-                "type": "object",
-                "properties": {
-                    "course_id": {
-                        "type": "integer",
-                        "description": "ID курса"
-                    }
-                },
-                "required": ["course_id"],
-            }
-        },
-        responses={
-            200: OpenApiResponse(description="Подписка успешно изменена"),
-            400: OpenApiResponse(description="course_id не передан"),
-            401: OpenApiResponse(description="Пользователь не авторизован"),
-            404: OpenApiResponse(description="Курс не найден"),
-        },
-    )
+    tags=["Подписки"],
+    description="Добавляет или удаляет подписку текущего пользователя на курс.",
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {"course_id": {"type": "integer", "description": "ID курса"}},
+            "required": ["course_id"],
+        }
+    },
+    responses={
+        200: OpenApiResponse(description="Подписка успешно изменена"),
+        400: OpenApiResponse(description="course_id не передан"),
+        401: OpenApiResponse(description="Пользователь не авторизован"),
+        404: OpenApiResponse(description="Курс не найден"),
+    },
+)
 class SubscriptionAPIView(CreateAPIView):
     """Подписка или отписка пользователя от курса."""
+
     # permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):

@@ -13,10 +13,12 @@ class PaymentSerializer(ModelSerializer):
         model = Payment
         fields = (
             "id",
+            "payment_method",
+            "amount",
+            "session_id",
+            "link",
             "user",
             "payment_date",
-            "amount",
-            "payment_method",
             "item",
         )
 

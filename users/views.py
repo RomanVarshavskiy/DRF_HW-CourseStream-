@@ -1,15 +1,19 @@
+from django.contrib.contenttypes.models import ContentType
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse, OpenApiParameter
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import filters
 from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import ModelViewSet
 
+from materials.models import Course, Lesson
 from users.models import Payment, User
 from users.serializers import PaymentSerializer, PrivateUserSerializer, PublicUserSerializer
 
 from .filters import PaymentFilter
 from .permissions import IsSelfOrAdmin
+from .services import convert_rub_to_usd, create_stripe_checkout_session, create_stripe_price
+
 
 @extend_schema(
     tags=["Пользователи"],
@@ -28,6 +32,7 @@ class UserCreateAPIView(CreateAPIView):
         user.set_password(user.password)
         user.save()
 
+
 @extend_schema(
     tags=["Пользователи"],
     description="Получение списка пользователей",
@@ -38,6 +43,7 @@ class UserListAPIView(ListAPIView):
 
     queryset = User.objects.all()
     serializer_class = PublicUserSerializer
+
 
 @extend_schema(
     tags=["Пользователи"],
@@ -100,10 +106,50 @@ class UserDestroyAPIView(DestroyAPIView):
 
 @extend_schema(
     tags=["Платежи"],
-    description=(
-        "Список платежей с возможностью фильтрации "
-        "и сортировки по дате оплаты."
-    ),
+    description="Создание нового платежа. Можно привязать к курсу или уроку.",
+    request=PaymentSerializer,
+    responses={
+        201: PaymentSerializer,
+        400: "Некорректные данные",
+    },
+)
+class PaymentCreateAPIView(CreateAPIView):
+    """Создание нового платежа с возможностью привязки к курсу или уроку."""
+
+    serializer_class = PaymentSerializer
+    queryset = Payment.objects.all()
+
+    def perform_create(self, serializer):
+        content_type_str = self.request.data.get("content_type")
+        object_id = self.request.data.get("object_id")
+
+        content_type = None
+        if content_type_str and object_id:
+            if content_type_str.lower() == "course":
+                model = Course
+            elif content_type_str.lower() == "lesson":
+                model = Lesson
+            else:
+                raise ValueError("content_type должен быть 'course' или 'lesson'")
+
+            content_type = ContentType.objects.get_for_model(model)
+
+        payment = serializer.save(
+            user=self.request.user,
+            content_type=content_type,
+            object_id=object_id if object_id else None,
+        )
+        amount_in_usd = convert_rub_to_usd(payment.amount)
+        price = create_stripe_price(amount_in_usd)
+        session_id, payment_link = create_stripe_checkout_session(price)
+        payment.session_id = session_id
+        payment.link = payment_link
+        payment.save()
+
+
+@extend_schema(
+    tags=["Платежи"],
+    description=("Список платежей с возможностью фильтрации " "и сортировки по дате оплаты."),
     parameters=[
         OpenApiParameter(
             name="payment_date",

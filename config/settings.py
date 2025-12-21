@@ -26,7 +26,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
-
     "users",
     "materials",
 ]
@@ -70,7 +69,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     # "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny",],
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema"
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 DATABASES = {
@@ -130,8 +129,10 @@ SIMPLE_JWT = {
 
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'CourseStream API',
-    'DESCRIPTION': 'API для курсов, уроков, подписок и платежей',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+    "TITLE": "CourseStream API",
+    "DESCRIPTION": "API для курсов, уроков, подписок и платежей",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
+
+STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
