@@ -6,6 +6,8 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """Кастомная модель пользователя."""
+
     username = None
 
     email = models.EmailField(unique=True, verbose_name="email", help_text="Email address")
@@ -28,7 +30,11 @@ class User(AbstractUser):
 
 
 class Payment(models.Model):
+    """Модель платежа пользователя."""
+
     class PaymentMethod(models.TextChoices):
+        """Доступные способы оплаты."""
+
         CASH = "cash", "Cash"
         TRANSFER = "transfer", "Transfer"
 
@@ -56,8 +62,16 @@ class Payment(models.Model):
     payment_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата оплаты", help_text="Укажи дату оплаты")
 
     # --- ссылка на Course или Lesson ---
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        verbose_name="Тип объекта",
+        help_text="Тип оплачиваемого объекта (курс или урок)"
+    )
+    object_id = models.PositiveIntegerField(
+        verbose_name="ID объекта",
+        help_text="ID курса или урока",
+    )
     item = GenericForeignKey("content_type", "object_id")
 
     class Meta:

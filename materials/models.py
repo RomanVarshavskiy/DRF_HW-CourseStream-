@@ -4,6 +4,8 @@ from users.models import User
 
 
 class Course(models.Model):
+    """Модель курса обучения."""
+
     name = models.CharField(max_length=255, unique=True, verbose_name="name", help_text="Название курса")
     preview = models.ImageField(
         upload_to="materials/preview", blank=True, null=True, verbose_name="preview", help_text="Загрузите картинку"
@@ -20,6 +22,8 @@ class Course(models.Model):
 
 
 class Lesson(models.Model):
+    """Модель урока. Представляет учебный материал, привязанный к курсу."""
+
     name = models.CharField(max_length=255, unique=True, verbose_name="name", help_text="Название урока")
     description = models.TextField(blank=True, null=True, verbose_name="description", help_text="Укажите описание")
     preview = models.ImageField(
@@ -44,6 +48,8 @@ class Lesson(models.Model):
 
 
 class Subscription(models.Model):
+    """Модель подписки пользователя на курс."""
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -60,6 +66,7 @@ class Subscription(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
+        ordering = ["-created_at"]
         unique_together = ("user", "course")
         verbose_name = "Подписка"
         verbose_name_plural = "Подписки"
