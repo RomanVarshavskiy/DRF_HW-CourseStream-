@@ -1,9 +1,12 @@
 from django.contrib.contenttypes.models import ContentType
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
-from rest_framework import filters
-from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
+from rest_framework import filters, status
+from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, \
+    get_object_or_404
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from materials.models import Course, Lesson
@@ -12,7 +15,8 @@ from users.serializers import PaymentSerializer, PrivateUserSerializer, PublicUs
 
 from .filters import PaymentFilter
 from .permissions import IsSelfOrAdmin
-from .services import convert_rub_to_usd, create_stripe_checkout_session, create_stripe_price
+from .services import convert_rub_to_usd, create_stripe_checkout_session, create_stripe_price, \
+    retrieve_stripe_checkout_session
 
 
 @extend_schema(
@@ -169,3 +173,51 @@ class PaymentListAPIView(ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = PaymentFilter
     ordering_fields = ("payment_date",)
+
+
+@extend_schema(
+    tags=["Платежи"],
+    summary="Проверка статуса платежа",
+    description=("Возвращает актуальный статус платежа в Stripe по `session_id`. Доступно только владельцу платежа."),
+    parameters=[
+        OpenApiParameter(
+            name="pk",
+            type=int,
+            location=OpenApiParameter.PATH,
+            description="ID платежа",
+        ),
+    ],
+    responses={
+        200: OpenApiResponse(description="Статус платежа успешно получен"),
+        400: OpenApiResponse(description="У платежа отсутствует session_id"),
+        401: OpenApiResponse(description="Пользователь не авторизован"),
+        404: OpenApiResponse(description="Платеж не найден или не принадлежит пользователю"),
+    },
+)
+class PaymentStatusAPIView(APIView):
+    """Проверка статуса платежа в Stripe по session_id."""
+
+    queryset = Payment.objects.all()
+    serializer_class = PrivateUserSerializer
+
+    def get(self, request, pk):
+        payment = get_object_or_404(Payment, pk=pk, user=request.user)
+
+        if not payment.session_id:
+            return Response(
+                {"error": "У платежа нет session_id"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        session = retrieve_stripe_checkout_session(payment.session_id)
+
+        return Response(
+            {
+                "payment_id": payment.id,
+                "stripe_status": session.payment_status,
+                "amount_total": session.amount_total,
+                "currency": session.currency,
+            },
+            status=status.HTTP_200_OK
+        )
+

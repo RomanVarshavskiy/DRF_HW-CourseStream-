@@ -66,7 +66,7 @@ class Payment(models.Model):
         ContentType,
         on_delete=models.CASCADE,
         verbose_name="Тип объекта",
-        help_text="Тип оплачиваемого объекта (курс или урок)"
+        help_text="Тип оплачиваемого объекта (курс или урок)",
     )
     object_id = models.PositiveIntegerField(
         verbose_name="ID объекта",
