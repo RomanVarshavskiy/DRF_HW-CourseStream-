@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
@@ -130,6 +132,12 @@ class PaymentTestCase(APITestCase):
         self.user1 = User.objects.create(email="admin@example.com")
         self.user2 = User.objects.create(email="student@example.com")
         self.course = Course.objects.create(name="Python", description="Вводный курс Python", owner=self.user1)
+        self.lesson = Lesson.objects.create(
+            name="Введение",
+            course=self.course,
+            owner=self.user1,
+            video="https://www.youtube.com/watch?v=test",
+        )
         self.course_ct = ContentType.objects.get_for_model(Course)
         self.payment1 = Payment.objects.create(
             payment_method=Payment.PaymentMethod.CASH,
@@ -159,3 +167,128 @@ class PaymentTestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(data), 2)
+
+    @patch("users.views.create_stripe_checkout_session")
+    @patch("users.views.create_stripe_price")
+    @patch("users.views.convert_rub_to_usd")
+    def test_payment_create_success(self, mock_convert, mock_price, mock_session):
+        """Проверяет создание нового платежа через API."""
+
+        self.client.force_authenticate(user=self.user1)
+
+        url = reverse("users:payment-create")
+
+        mock_convert.return_value = 50
+        mock_price.return_value = {"id": "price_123"}
+        mock_session.return_value = ("sess_123", "https://stripe.test/pay")
+
+        data = {
+            "amount": 5000,
+            "payment_method": "transfer",
+            "content_type": "course",
+            "object_id": self.course.pk,
+        }
+
+        response = self.client.post(url, data=data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Payment.objects.count(), 3)
+
+        payment = Payment.objects.latest("id")
+        self.assertEqual(payment.user, self.user1)
+        self.assertEqual(payment.amount, 5000)
+        self.assertEqual(payment.session_id, "sess_123")
+        self.assertEqual(payment.link, "https://stripe.test/pay")
+
+    def test_payment_create_unauthenticated(self):
+        """Проверяет, что неавторизованный пользователь не может создать платеж."""
+
+        self.client.force_authenticate(user=None)
+        url = reverse("users:payment-create")
+        data = {
+            "amount": 5000,
+            "payment_method": "transfer",
+            "content_type": "course",
+            "object_id": self.course.pk,
+        }
+        response = self.client.post(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @patch("users.views.create_stripe_checkout_session")
+    @patch("users.views.create_stripe_price")
+    @patch("users.views.convert_rub_to_usd")
+    def test_payment_create_invalid_content_type(self, mock_convert, mock_price, mock_session):
+        """Проверяет, что указание некорректного content_type вызывает ValueError."""
+
+        self.client.force_authenticate(user=self.user1)
+
+        url = reverse("users:payment-create")
+        mock_convert.return_value = 50
+        mock_price.return_value = {"id": "price_123"}
+        mock_session.return_value = ("sess_123", "https://stripe.test/pay")
+
+        data = {"amount": 5000, "payment_method": "transfer", "content_type": "invalid", "object_id": 1}
+
+        with self.assertRaises(ValueError):
+            self.client.post(url, data=data)
+
+
+class PaymentStatusTestCase(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create(email="user@example.com")
+        self.other_user = User.objects.create(email="other@example.com")
+        self.course = Course.objects.create(name="Python", description="Вводный курс Python", owner=self.user)
+        self.course_ct = ContentType.objects.get_for_model(Course)
+
+        # Платеж с session_id
+        self.payment = Payment.objects.create(
+            payment_method=Payment.PaymentMethod.CASH,
+            user=self.user,
+            amount=100,
+            content_type=self.course_ct,
+            object_id=self.course.pk,
+            session_id="sess_123",
+        )
+
+        # Платеж без session_id
+        self.payment_no_session = Payment.objects.create(
+            payment_method=Payment.PaymentMethod.TRANSFER,
+            user=self.user,
+            amount=200,
+            content_type=self.course_ct,
+            object_id=self.course.pk,
+            session_id=None,
+        )
+
+    @patch("users.views.retrieve_stripe_checkout_session")
+    def test_status_success(self, mock_retrieve):
+        """Проверка успешного ответа со Stripe."""
+
+        self.client.force_authenticate(user=self.user)
+        mock_retrieve.return_value = type(
+            "Session", (), {"payment_status": "paid", "amount_total": 1000, "currency": "usd"}
+        )()
+
+        url = reverse("users:payment-status", args=[self.payment.pk])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["stripe_status"], "paid")
+        self.assertEqual(response.json()["amount_total"], 1000)
+
+    def test_payment_no_session_id(self):
+        """Если у платежа нет session_id, возвращается 400."""
+        self.client.force_authenticate(user=self.user)
+        url = reverse("users:payment-status", args=[self.payment_no_session.pk])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.json())
+
+    def test_payment_not_owner(self):
+        """Если пользователь не владелец платежа, возвращается 404."""
+        self.client.force_authenticate(user=self.other_user)
+        url = reverse("users:payment-status", args=[self.payment.pk])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

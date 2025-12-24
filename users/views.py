@@ -2,8 +2,8 @@ from django.contrib.contenttypes.models import ContentType
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import filters, status
-from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, \
-    get_object_or_404
+from rest_framework.generics import (CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView,
+                                     get_object_or_404)
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,8 +15,8 @@ from users.serializers import PaymentSerializer, PrivateUserSerializer, PublicUs
 
 from .filters import PaymentFilter
 from .permissions import IsSelfOrAdmin
-from .services import convert_rub_to_usd, create_stripe_checkout_session, create_stripe_price, \
-    retrieve_stripe_checkout_session
+from .services import (convert_rub_to_usd, create_stripe_checkout_session, create_stripe_price,
+                       retrieve_stripe_checkout_session)
 
 
 @extend_schema(
@@ -204,10 +204,7 @@ class PaymentStatusAPIView(APIView):
         payment = get_object_or_404(Payment, pk=pk, user=request.user)
 
         if not payment.session_id:
-            return Response(
-                {"error": "У платежа нет session_id"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "У платежа нет session_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         session = retrieve_stripe_checkout_session(payment.session_id)
 
@@ -218,6 +215,5 @@ class PaymentStatusAPIView(APIView):
                 "amount_total": session.amount_total,
                 "currency": session.currency,
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
-

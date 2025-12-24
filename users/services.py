@@ -35,6 +35,7 @@ def create_stripe_checkout_session(price):
     )
     return session.get("id"), session.get("url")
 
+
 def retrieve_stripe_checkout_session(session_id):
     """Получает информацию о Stripe Checkout Session по session_id."""
 
