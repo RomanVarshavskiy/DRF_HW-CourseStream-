@@ -111,7 +111,6 @@ class LessonTestCase(APITestCase):
 class CourseTestCase(APITestCase):
     """Тесты для API курсов: CRUD, права доступа и список уроков."""
 
-
     def setUp(self) -> None:
         """Создаёт пользователя, курс и урок, аутентифицирует клиента."""
 
