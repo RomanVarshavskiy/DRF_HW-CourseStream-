@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.auth.models import Group
@@ -168,18 +169,19 @@ class PaymentTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(data), 2)
 
+    @patch("users.views.create_stripe_product")
     @patch("users.views.create_stripe_checkout_session")
     @patch("users.views.create_stripe_price")
     @patch("users.views.convert_rub_to_usd")
-    def test_payment_create_success(self, mock_convert, mock_price, mock_session):
+    def test_payment_create_success(self, mock_convert, mock_price, mock_session, mock_product):
         """Проверяет создание нового платежа через API."""
 
         self.client.force_authenticate(user=self.user1)
-
         url = reverse("users:payment-create")
 
         mock_convert.return_value = 50
-        mock_price.return_value = {"id": "price_123"}
+        mock_product.return_value = SimpleNamespace(id="prod_123", name="Python")
+        mock_price.return_value = SimpleNamespace(id="price_123")
         mock_session.return_value = ("sess_123", "https://stripe.test/pay")
 
         data = {
@@ -199,6 +201,8 @@ class PaymentTestCase(APITestCase):
         self.assertEqual(payment.amount, 5000)
         self.assertEqual(payment.session_id, "sess_123")
         self.assertEqual(payment.link, "https://stripe.test/pay")
+        self.assertEqual(payment.stripe_product_id, "prod_123")
+        self.assertEqual(payment.stripe_price_id, "price_123")
 
     def test_payment_create_unauthenticated(self):
         """Проверяет, что неавторизованный пользователь не может создать платеж."""
@@ -214,23 +218,24 @@ class PaymentTestCase(APITestCase):
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    @patch("users.views.create_stripe_product")
     @patch("users.views.create_stripe_checkout_session")
     @patch("users.views.create_stripe_price")
     @patch("users.views.convert_rub_to_usd")
-    def test_payment_create_invalid_content_type(self, mock_convert, mock_price, mock_session):
+    def test_payment_create_invalid_content_type(self, mock_convert, mock_price, mock_session, mock_product):
         """Проверяет, что указание некорректного content_type вызывает ValueError."""
 
         self.client.force_authenticate(user=self.user1)
 
         url = reverse("users:payment-create")
         mock_convert.return_value = 50
-        mock_price.return_value = {"id": "price_123"}
+        mock_price.return_value = SimpleNamespace(id="price_123")
         mock_session.return_value = ("sess_123", "https://stripe.test/pay")
 
         data = {"amount": 5000, "payment_method": "transfer", "content_type": "invalid", "object_id": 1}
 
-        with self.assertRaises(ValueError):
-            self.client.post(url, data=data)
+        response = self.client.post(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class PaymentStatusTestCase(APITestCase):

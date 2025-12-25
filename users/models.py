@@ -72,7 +72,24 @@ class Payment(models.Model):
         verbose_name="ID объекта",
         help_text="ID курса или урока",
     )
-    item = GenericForeignKey("content_type", "object_id")
+    item = GenericForeignKey(
+        "content_type",
+        "object_id"
+    )
+    stripe_product_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Stripe Product ID",
+        help_text="ID продукта в Stripe"
+    )
+    stripe_price_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Stripe Price ID",
+        help_text="ID цены в Stripe"
+    )
 
     class Meta:
         verbose_name = "Платеж"

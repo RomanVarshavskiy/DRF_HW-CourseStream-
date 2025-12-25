@@ -2,6 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import filters, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import (CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView,
                                      get_object_or_404)
 from rest_framework.permissions import AllowAny
@@ -16,7 +17,7 @@ from users.serializers import PaymentSerializer, PrivateUserSerializer, PublicUs
 from .filters import PaymentFilter
 from .permissions import IsSelfOrAdmin
 from .services import (convert_rub_to_usd, create_stripe_checkout_session, create_stripe_price,
-                       retrieve_stripe_checkout_session)
+                       retrieve_stripe_checkout_session, create_stripe_product)
 
 
 @extend_schema(
@@ -128,24 +129,27 @@ class PaymentCreateAPIView(CreateAPIView):
         object_id = self.request.data.get("object_id")
 
         content_type = None
-        if content_type_str and object_id:
-            if content_type_str.lower() == "course":
-                model = Course
-            elif content_type_str.lower() == "lesson":
-                model = Lesson
-            else:
-                raise ValueError("content_type должен быть 'course' или 'lesson'")
+        if content_type_str.lower() == "course":
+            model = Course
+        elif content_type_str.lower() == "lesson":
+            model = Lesson
+        else:
+            raise ValidationError("content_type должен быть 'course' или 'lesson'")
 
-            content_type = ContentType.objects.get_for_model(model)
+        content_type = ContentType.objects.get_for_model(model)
+        item = model.objects.get(pk=object_id)
 
         payment = serializer.save(
             user=self.request.user,
             content_type=content_type,
-            object_id=object_id if object_id else None,
+            object_id=object_id,
         )
+        product = create_stripe_product(item.name)
         amount_in_usd = convert_rub_to_usd(payment.amount)
-        price = create_stripe_price(amount_in_usd)
+        price = create_stripe_price(product, amount_in_usd)
         session_id, payment_link = create_stripe_checkout_session(price)
+        payment.stripe_product_id = product.id
+        payment.stripe_price_id = price.id
         payment.session_id = session_id
         payment.link = payment_link
         payment.save()
