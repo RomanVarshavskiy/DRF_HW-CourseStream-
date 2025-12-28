@@ -58,6 +58,8 @@ class CourseViewSet(ModelViewSet):
         return super().get_permissions()
 
 
+
+
 @extend_schema(tags=["Уроки"])
 class LessonCreateAPIView(CreateAPIView):
     """Создание нового урока."""
