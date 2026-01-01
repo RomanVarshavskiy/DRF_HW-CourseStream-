@@ -16,8 +16,8 @@ from users.serializers import PaymentSerializer, PrivateUserSerializer, PublicUs
 
 from .filters import PaymentFilter
 from .permissions import IsSelfOrAdmin
-from .services import (convert_rub_to_usd, create_stripe_checkout_session, create_stripe_price,
-                       retrieve_stripe_checkout_session, create_stripe_product)
+from .services import (convert_rub_to_usd, create_stripe_checkout_session, create_stripe_price, create_stripe_product,
+                       retrieve_stripe_checkout_session)
 
 
 @extend_schema(

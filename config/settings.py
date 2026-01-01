@@ -23,13 +23,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "drf_spectacular",
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
     "django_celery_beat",
-
     "users",
     "materials",
 ]
@@ -72,7 +70,6 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
-    # "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny",],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
@@ -160,12 +157,13 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 
 CELERY_BEAT_SCHEDULE = {
     "check-course-notifications-every-half_an_hour": {
-        "task": "materials.services.four_hours_notification",
+        "task": "materials.tasks.four_hours_notification",
         "schedule": timedelta(minutes=30),
     },
     "deactivate_inactive_users": {
         "task": "users.tasks.deactivate_inactive_users",
         "schedule": crontab(hour=3, minute=0),
+        # "schedule": timedelta(seconds=10),
     },
 }
 
@@ -189,4 +187,3 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 TELEGRAM_URL = "https://api.telegram.org/bot"
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-

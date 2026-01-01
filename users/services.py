@@ -2,6 +2,7 @@ import stripe
 from forex_python.converter import CurrencyRates
 
 from config.settings import STRIPE_API_KEY
+from users.models import User
 
 stripe.api_key = STRIPE_API_KEY
 
@@ -15,7 +16,7 @@ def convert_rub_to_usd(amount):
 
 
 def create_stripe_product(name):
-    """ Создаёт Stripe Product для курса или урока"""
+    """Создаёт Stripe Product для курса или урока"""
 
     product = stripe.Product.create(name=name)
     return product
@@ -48,3 +49,12 @@ def retrieve_stripe_checkout_session(session_id):
 
     session = stripe.checkout.Session.retrieve(session_id)
     return session
+
+
+def deactivate_inactive_users_service(cutoff_date):
+    """Деактивирует пользователей, не заходивших в систему дольше заданного срока."""
+
+    return User.objects.filter(
+        is_active=True,
+        last_login__lt=cutoff_date,
+    ).update(is_active=False)

@@ -41,7 +41,6 @@ class CourseViewSet(ModelViewSet):
         course.notification_pending = True
         course.save(update_fields=["notification_pending"])
 
-
     def get_queryset(self):
         """Возвращает доступные пользователю курсы."""
 
