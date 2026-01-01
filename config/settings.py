@@ -163,6 +163,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "materials.services.four_hours_notification",
         "schedule": timedelta(minutes=30),
     },
+    "deactivate_inactive_users": {
+        "task": "users.tasks.deactivate_inactive_users",
+        "schedule": crontab(hour=3, minute=0),
+    },
 }
 
 

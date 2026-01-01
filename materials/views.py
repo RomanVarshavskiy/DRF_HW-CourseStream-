@@ -72,6 +72,8 @@ class LessonCreateAPIView(CreateAPIView):
     permission_classes = (~IsModer,)
 
     def perform_create(self, serializer):
+        """Создаёт урок и помечает связанный курс как требующий уведомления."""
+
         lesson = serializer.save()
         lesson.owner = self.request.user
         lesson.save()
@@ -116,6 +118,8 @@ class LessonUpdateAPIView(UpdateAPIView):
     permission_classes = (IsModer | IsOwner,)
 
     def perform_update(self, serializer):
+        """Обновляет урок и помечает связанный курс как требующий уведомления."""
+
         lesson = serializer.save()
         lesson.owner = self.request.user
         lesson.save()

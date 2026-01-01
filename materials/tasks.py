@@ -1,11 +1,15 @@
+from datetime import timedelta
+
 from celery import shared_task
 from django.core.mail import send_mail
+from django.db import transaction
 from django.utils import timezone
 
 from config.settings import DEFAULT_FROM_EMAIL
 from materials.models import Course, Subscription
-from materials.services import send_telegram_message
+from materials.services import send_telegram_message, deactivate_inactive_users_service
 import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -43,35 +47,35 @@ def send_information_about_course_update(course_id):
             send_telegram_message(user.tg_chat_id, message)
             logger.info(f"Telegram message sent to {user.tg_chat_id}")
 
-#
-# @shared_task
-# def send_email_about_birthday():
-#     """Поздравляет пользователя с днем рождения собаки."""
-#     today = timezone.localdate()
-#     dogs = Dog.objects.filter(
-#         owner__isnull=False,
-#         date_born__month=today.month,
-#         date_born__day=today.day,
-#     )
-#
-#     if not dogs.exists():
-#         logger.info("Сегодня ни у одной собаки нет дня рождения")
-#         return
-#
-#     message = "Поздравляем вашу собаку с днем рождения!"
-#     email_list = []
-#
-#     for dog in dogs:
-#         email_list.append(dog.owner.email)
-#         if dog.owner.tg_chat_id:
-#             send_telegram_message(dog.owner.tg_chat_id, message)
-#
-#     logger.info(f"Поздравляем {len(email_list)} владельцев")
-#
-#     if email_list:
-#         send_mail(
-#             subject="Поздравление 🎉",
-#             message=message,
-#             from_email=DEFAULT_FROM_EMAIL,
-#             recipient_list=email_list,
-#         )
+
+
+@shared_task
+def four_hours_notification():
+    """Отправляет уведомления об обновлении курсов,
+    если с момента последнего уведомления прошло более 4 часов."""
+
+    courses = Course.objects.filter(notification_pending=True)
+    time_now = timezone.now()
+    four_hours_ago = time_now - timedelta(hours=4)
+
+    for course in courses:
+        with transaction.atomic():
+            course = Course.objects.select_for_update().get(id=course.id)
+
+            if not course.notification_pending:
+                continue
+            if not course.last_notification_at or course.last_notification_at < four_hours_ago:
+                send_information_about_course_update.delay(course.id)
+                course.last_notification_at = time_now
+                course.notification_pending = False
+                course.save(update_fields=["last_notification_at", "notification_pending"])
+
+
+
+@shared_task
+def deactivate_inactive_users():
+    """Деактивирует пользователей, не входивших в систему более 30 дней."""
+
+    cutoff_date = timezone.now() - timedelta(days=30)
+    return deactivate_inactive_users_service(cutoff_date)
+
