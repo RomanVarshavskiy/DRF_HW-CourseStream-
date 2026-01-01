@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -158,9 +159,9 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 CELERY_BEAT_SCHEDULE = {
-    "send_email_about_birthday": {
-        "task": "materials.tasks.send_email_about_birthday",  # Путь к задаче
-        "schedule": timedelta(days=1),  # Расписание выполнения задачи (например, каждые 10 минут)
+    "check-course-notifications-every-half_an_hour": {
+        "task": "materials.services.four_hours_notification",
+        "schedule": timedelta(minutes=30),
     },
 }
 

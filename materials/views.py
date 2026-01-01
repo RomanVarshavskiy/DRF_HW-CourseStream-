@@ -1,9 +1,7 @@
-from django.utils.decorators import method_decorator
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.generics import (CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView,
                                      get_object_or_404)
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -36,6 +34,14 @@ class CourseViewSet(ModelViewSet):
         course.owner = self.request.user
         course.save()
 
+    def perform_update(self, serializer):
+        """Обновляет курс и меняет флаг notification_pending = True."""
+
+        course = serializer.save()
+        course.notification_pending = True
+        course.save(update_fields=["notification_pending"])
+
+
     def get_queryset(self):
         """Возвращает доступные пользователю курсы."""
 
@@ -58,8 +64,6 @@ class CourseViewSet(ModelViewSet):
         return super().get_permissions()
 
 
-
-
 @extend_schema(tags=["Уроки"])
 class LessonCreateAPIView(CreateAPIView):
     """Создание нового урока."""
@@ -71,6 +75,13 @@ class LessonCreateAPIView(CreateAPIView):
         lesson = serializer.save()
         lesson.owner = self.request.user
         lesson.save()
+
+        course = lesson.course
+        if not course:
+            return
+
+        course.notification_pending = True
+        course.save(update_fields=["notification_pending"])
 
 
 @extend_schema(tags=["Уроки"], description="Список уроков с учётом прав доступа пользователя")
@@ -103,6 +114,18 @@ class LessonUpdateAPIView(UpdateAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = (IsModer | IsOwner,)
+
+    def perform_update(self, serializer):
+        lesson = serializer.save()
+        lesson.owner = self.request.user
+        lesson.save()
+
+        course = lesson.course
+        if not course:
+            return
+
+        course.notification_pending = True
+        course.save(update_fields=["notification_pending"])
 
 
 @extend_schema(tags=["Уроки"], description="Удаление урока (доступно только владельцу)")

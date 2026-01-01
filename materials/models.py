@@ -12,6 +12,10 @@ class Course(models.Model):
     )
     description = models.TextField(blank=True, null=True, verbose_name="description", help_text="Укажите описание")
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="owner")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="update_at")
+    last_notification_at = models.DateTimeField(blank=True, null=True)
+    notification_pending = models.BooleanField(default=False)
+
 
     class Meta:
         verbose_name = "Курс"
@@ -59,7 +63,11 @@ class Subscription(models.Model):
         related_name="subscriptions",
     )
     course = models.ForeignKey(
-        Course, on_delete=models.CASCADE, blank=True, null=True, verbose_name="course", related_name="subscriptions"
+        Course,
+        on_delete=models.CASCADE,
+        blank=True, null=True,
+        verbose_name="course",
+        related_name="subscriptions"
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="created_at")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="update_at")
