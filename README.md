@@ -67,6 +67,37 @@ CourseStream — это backend-приложение на Django REST Framework 
     ```bash
     poetry run python manage.py runserver
     ```
+    
+
+    ## Запуск через Docker Compose
+
+    Если у вас установлен Docker и Docker Compose, вы можете запустить весь проект (Django, PostgreSQL, Redis, Celery) одной командой.
+
+    ### Шаги для запуска:
+
+    1.  **Настройте переменные окружения:**
+        Убедитесь, что у вас создан файл `.env`. Для работы в Docker убедитесь, что `POSTGRES_HOST` установлен как `db`, а `CELERY_BROKER_URL` использует `redis` в качестве хоста.
+
+    2.  **Соберите и запустите контейнеры:**
+        ```bash
+        docker-compose up --build
+        ```
+
+    ### Проверка работоспособности сервисов:
+
+    - **Django (web)**: Откройте в браузере [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Если сервер работает, вы увидите страницу приветствия или документацию.
+    - **PostgreSQL (db)**: Проверьте логи контейнера (`docker-compose logs db`). Должно быть сообщение о готовности принимать подключения. Также можно выполнить:
+      ```bash
+      docker-compose exec db pg_isready -U <ваш_postgres_user>
+      ```
+    - **Redis**: Выполните команду ping:
+      ```bash
+      docker-compose exec redis redis-cli ping
+      ```
+      В ответе должно прийти `PONG`.
+    - **Celery Worker**: Проверьте логи: `docker-compose logs celery`. Вы должны увидеть сообщение о готовности (ready) и список подключенных задач.
+    - **Celery Beat**: Проверьте логи: `docker-compose logs celery-beat`. В логах должны появляться записи о планировании задач.
+
 
 ### Запуск фоновых задач (Celery)
 
