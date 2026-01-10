@@ -1,26 +1,29 @@
-version: "3.9"
-
 services:
   web:
     build: .
     command: >
       bash -c "python manage.py migrate &&
-               python manage.py runserver 0.0.0.0:8000"
+               gunicorn config.wsgi:application --bind 0.0.0.0:8000"
     env_file:
       - .env
-    environment:
-      - DEBUG=True
-      - POSTGRES_HOST=db
     volumes:
       - .:/app
       - static_volume:/app/static
     ports:
       - "8000:8000"
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - db
+      - redis
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/static
+    depends_on:
+      - web
 
   db:
     image: postgres:17
@@ -28,8 +31,6 @@ services:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}" ]
       interval: 10s
@@ -38,8 +39,8 @@ services:
 
   redis:
     image: redis:7
-    ports:
-      - "6379:6379"
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -71,3 +72,4 @@ services:
 volumes:
   postgres_data:
   static_volume:
+  redis_data:

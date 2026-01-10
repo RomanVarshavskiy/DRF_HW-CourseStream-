@@ -13,7 +13,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = os.getenv("DEBUG", False) == "True"
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "web", "nginx", "0.0.0.0"]
 
 
 INSTALLED_APPS = [
@@ -114,7 +114,8 @@ USE_L18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
-# STATICFILES_DIRS = (BASE_DIR / "static",)
+# STATICFILES_DIRS = BASE_DIR / "static"
+STATIC_ROOT = BASE_DIR / "static"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -187,3 +188,13 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 TELEGRAM_URL = "https://api.telegram.org/bot"
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+
+
+# CACHE_ENABLED = True
+# if CACHE_ENABLED:
+#     CACHES = {
+#         "default": {
+#             "BACKEND": "django.core.cache.backends.redis.RedisCache",
+#             "LOCATION": os.getenv("LOCATION"),
+#         }
+#     }
