@@ -1,0 +1,45 @@
+name: Django CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Configure Poetry
+      run: |
+        poetry config virtualenvs.create false
+
+    - name: Install dependencies
+      run: |
+        poetry install --no-interaction --no-root
+
+    - name: Run migrations
+      run: |
+        poetry run python manage.py migrate
+
+    - name: Run tests
+      run: |
+        poetry run python manage.py test
+
+    - name: Set environment variables
+      run: |
+        echo "SECRET_KEY=ci-secret-key" >> $GITHUB_ENV
+        echo "DEBUG=True" >> $GITHUB_ENV
+        
