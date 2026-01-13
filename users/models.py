@@ -1,4 +1,3 @@
-from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType

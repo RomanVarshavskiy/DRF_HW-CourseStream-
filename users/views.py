@@ -8,7 +8,6 @@ from rest_framework.generics import (CreateAPIView, DestroyAPIView, ListAPIView,
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
 
 from materials.models import Course, Lesson
 from users.models import Payment, User

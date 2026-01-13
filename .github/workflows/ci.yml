@@ -1,0 +1,124 @@
+name: Django CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache Poetry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        run: poetry install --no-root --with lint
+
+      - name: Run Flake8
+        run: poetry run flake8 .
+
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache Poetry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Run migrations
+        run: poetry run python manage.py migrate
+
+      - name: Run tests
+        run: poetry run python manage.py test
+
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | \
+          docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coursestream:${{ github.sha }} \
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coursestream:latest \
+            .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coursestream:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coursestream:latest
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy on server
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+          ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            cd ${{ secrets.DEPLOY_DIR }}
+            docker compose pull
+            docker compose up -d --remove-orphans
+          EOF
