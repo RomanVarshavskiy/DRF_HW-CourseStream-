@@ -1,13 +1,12 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from materials.models import Course, Lesson, Subscription
+from materials.models import Course, Lesson
 from users.models import Payment, User
 
 

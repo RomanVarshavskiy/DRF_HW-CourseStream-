@@ -38,5 +38,6 @@ RUN mkdir -p /app/media
 # Открываем порт Django
 EXPOSE 8000
 
-# Запуск Django
-#CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Запуск Django приложения
+CMD ["sh", "-c", "python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000"]
+
