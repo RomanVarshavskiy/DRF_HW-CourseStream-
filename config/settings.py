@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -198,3 +199,11 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 #             "LOCATION": os.getenv("LOCATION"),
 #         }
 #     }
+
+if "test" in sys.argv:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
