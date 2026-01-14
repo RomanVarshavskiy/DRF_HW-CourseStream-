@@ -127,4 +127,47 @@ poetry run coverage run --source='.' manage.py test poetry run coverage report
 - **deactivate_inactive_users**: Каждый день в 03:00 деактивирует пользователей, которые не заходили в систему более 30 дней.
 - **four_hours_notification**: Раз в 30 минут проверяет обновления курсов и рассылает уведомления подписчикам (не чаще чем раз в 4 часа для одного курса).
 
+## Деплой и CI/CD
+
+В проекте настроена автоматизация через GitHub Actions. При каждом пуше в ветку `main` запускается процесс проверки кода, тестирования и автоматического деплоя на удаленный сервер.
+
+### Настройка удаленного сервера (Ubuntu/Debian)
+
+1.  **Установите Docker и Docker Compose:**
+    ```bash
+    sudo apt update
+    sudo apt install docker.io docker-compose -y
+    sudo systemctl enable --now docker
+    ```
+2.  **Подготовьте директорию проекта:**
+    Создайте папку, указанную в `DEPLOY_DIR` (например, `/home/username/coursestream`), и разместите там файлы `docker-compose.yml` и конфигурацию `nginx/nginx.conf`.
+3.  **Настройте `.env` на сервере:**
+    Создайте файл `.env` в директории проекта на сервере и заполните его боевыми значениями.
+
+### Настройка GitHub Secrets
+
+Для корректной работы GitHub Actions (workflow) необходимо добавить следующие секреты в настройках вашего репозитория (**Settings -> Secrets and variables -> Actions**):
+
+| Секрет | Описание |
+| :--- | :--- |
+| `SECRET_KEY` | Секретный ключ Django |
+| `DOCKER_HUB_USERNAME` | Ваш логин на Docker Hub |
+| `DOCKER_HUB_ACCESS_TOKEN` | Access Token от Docker Hub |
+| `SSH_KEY` | Приватный SSH-ключ для доступа к серверу |
+| `SSH_USER` | Имя пользователя на сервере (например, `root`) |
+| `SERVER_IP` | IP-адрес вашего сервера |
+| `DEPLOY_DIR` | Путь к папке проекта на сервере (например, `/home/app/coursestream`) |
+
+### Workflow шаги
+
+1.  **Lint**: Проверка кода на соответствие стандартам (flake8).
+2.  **Test**: Запуск тестов внутри временного контейнера с PostgreSQL.
+3.  **Build**: Сборка Docker-образа и отправка его на Docker Hub с тегами `latest` и SHA коммита.
+4.  **Deploy**: Подключение к серверу по SSH, загрузка новых образов (`docker compose pull`) и перезапуск контейнеров.
+
+### Ручной деплой
+Если вам нужно обновить приложение вручную на сервере:
+```bash
+docker compose pull
+docker compose up -d --remove-orphans
 
