@@ -74,12 +74,12 @@ jobs:
       - name: Run migrations
         env:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          run: poetry run python manage.py migrate
+        run: poetry run python manage.py migrate
 
       - name: Run tests
         env:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          run: poetry run python manage.py test
+        run: poetry run python manage.py test
 
 
   build:
