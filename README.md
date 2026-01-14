@@ -24,125 +24,185 @@ CourseStream — это backend-приложение на Django REST Framework 
 - **Poetry** (Управление зависимостями)
 - **Docker** (Опционально для развертывания)
 
-## Установка и запуск
+## Настройка и запуск проекта локально
 
-### Предварительные требования
-Убедитесь, что у вас установлены:
-- Python 3.13+
-- Poetry
-- Redis (для работы Celery)
+### 1. Клонируйте репозиторий
+```bash
+git clone <URL_вашего_репозитория>
+cd DRF_HW
+```
 
-### Шаги установки
+### 2. Установите зависимости
+```bash
+poetry install
+```
+Если Poetry не установлен, установите его.
 
-1.  **Клонируйте репозиторий:**
-    ```bash
-    git clone <url_вашего_репозитория>
-    cd DRF_HW
-    ```
+### 3. Настройте переменные окружения
+Скопируйте шаблон .env_template в .env:
 
-2.  **Установите зависимости:**
-    ```bash
-    poetry install
-    ```
+```bash
+cp .env_template .env
+```
+**Откройте .env и заполните все необходимые переменные:**
 
-3.  **Настройте переменные окружения:**
-    Создайте файл `.env` на основе `.env_template` и заполните необходимые данные:
-    - Настройки БД (POSTGRES_*)
-    - Stripe API ключи
-    - Настройки Email/Telegram бота
-    - CELERY_BROKER_URL
+SECRET_KEY=your_secret_key
+POSTGRES_DB=coursestream
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+CELERY_BROKER_URL=redis://localhost:6379/0
+STRIPE_SECRET_KEY=sk_test_...
+EMAIL_HOST=...
+EMAIL_PORT=...
+EMAIL_USER=...
+EMAIL_PASSWORD=...
+TELEGRAM_BOT_TOKEN=...
 
-4.  **Примените миграции:**
-    ```bash
-    poetry run python manage.py migrate
-    ```
+### 4. Поднимите локальную базу данных и Redis
+Для локальной разработки удобно использовать Docker Compose, но можно и вручную:
 
-5.  **Создайте суперпользователя (админа):**
-    ```bash
-    poetry run python manage.py csu
-    ```
-    *По умолчанию создается: admin@example.com / 1234admin*
+**Через Docker Compose:**
 
-6.  **Запустите сервер:**
-    ```bash
-    poetry run python manage.py runserver
-    ```
-    
+```bash
+docker-compose up -d db redis
+```
 
-    ## Запуск через Docker Compose
+**Вручную:**
 
-    Если у вас установлен Docker и Docker Compose, вы можете запустить весь проект (Django, PostgreSQL, Redis, Celery) одной командой.
+PostgreSQL: убедитесь, что сервер PostgreSQL запущен и есть база с именем POSTGRES_DB.
 
-    ### Шаги для запуска:
+Redis: запустите redis-server локально.
 
-    1.  **Настройте переменные окружения:**
-        Убедитесь, что у вас создан файл `.env`. Для работы в Docker убедитесь, что `POSTGRES_HOST` установлен как `db`, а `CELERY_BROKER_URL` использует `redis` в качестве хоста.
+### 5. Примените миграции
+```bash
+poetry run python manage.py migrate
+```
 
-    2.  **Соберите и запустите контейнеры:**
-        ```bash
-        docker-compose up --build
-        ```
+### 6. Создайте суперпользователя
+```bash
+poetry run python manage.py csu
+```
 
-    ### Проверка работоспособности сервисов:
+### 7. Запуск сервера Django
+```bash
+poetry run python manage.py runserver
+```
+Сервер будет доступен по адресу: http://127.0.0.1:8000/
 
-    - **Django (web)**: Откройте в браузере [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Если сервер работает, вы увидите страницу приветствия или документацию.
-    - **PostgreSQL (db)**: Проверьте логи контейнера (`docker-compose logs db`). Должно быть сообщение о готовности принимать подключения. Также можно выполнить:
-      ```bash
-      docker-compose exec db pg_isready -U <ваш_postgres_user>
-      ```
-    - **Redis**: Выполните команду ping:
-      ```bash
-      docker-compose exec redis redis-cli ping
-      ```
-      В ответе должно прийти `PONG`.
-    - **Celery Worker**: Проверьте логи: `docker-compose logs celery`. Вы должны увидеть сообщение о готовности (ready) и список подключенных задач.
-    - **Celery Beat**: Проверьте логи: `docker-compose logs celery-beat`. В логах должны появляться записи о планировании задач.
+### 8. Запуск Celery для фоновых задач
+В отдельных терминалах запустите:
 
+**Worker:**
 
-### Запуск фоновых задач (Celery)
-
-В отдельных терминалах запустите воркер и планировщик:
-Worker
+```bash
 poetry run celery -A config worker -l info
-Beat (периодические задачи)
+```
+
+**Beat** (периодические задачи):
+
+```bash
 poetry run celery -A config beat -l info
+```
+### 9. Проверка работы
+Django API: http://127.0.0.1:8000/swagger/ или /redoc/
 
-## Документация API
+**Redis:**
 
+```bash
+redis-cli ping
+```
+# Ответ должен быть PONG
+
+**PostgreSQL:**
+
+```bash
+psql -U <POSTGRES_USER> -d <POSTGRES_DB> -h localhost
+```
+**Celery:** в логах воркера должны появляться задачи.
+
+### 10. Запуск тестов и покрытие кода
+```bash
+poetry run coverage run --source='.' manage.py test
+poetry run coverage report
+Запуск через Docker Compose
+```
+#### Если у вас установлен Docker и Docker Compose, вы можете запустить весь проект (Django, PostgreSQL, Redis, Celery) одной командой.
+
+**Шаги для запуска:**
+- **Настройте переменные окружения:**
+Убедитесь, что у вас создан файл .env. Для работы в Docker убедитесь, что POSTGRES_HOST установлен как db, а CELERY_BROKER_URL использует redis в качестве хоста.
+
+- **Соберите и запустите контейнеры:**
+
+```bash
+docker-compose up --build
+```
+### Проверка работоспособности сервисов:
+Django (web): http://127.0.0.1:8000/
+
+PostgreSQL (db):
+
+```bash
+docker-compose logs db
+docker-compose exec db pg_isready -U <ваш_postgres_user>
+```
+Redis:
+
+```bash
+docker-compose exec redis redis-cli ping
+```
+Celery Worker:
+
+```bash
+docker-compose logs celery
+```
+Celery Beat:
+
+```bash
+docker-compose logs celery-beat
+```
+### Документация API
 После запуска сервера документация доступна по адресам:
-- **Swagger UI**: [http://127.0.0.1:8000/swagger/](http://127.0.0.1:8000/swagger/)
-- **ReDoc**: [http://127.0.0.1:8000/redoc/](http://127.0.0.1:8000/redoc/)
 
-## Тестирование
+Swagger UI: http://127.0.0.1:8000/swagger/
 
-Для запуска тестов и проверки покрытия кода:
-poetry run coverage run --source='.' manage.py test poetry run coverage report
+ReDoc: http://127.0.0.1:8000/redoc/
 
-## Права доступа (Permissions)
-- **Модераторы**: Могут просматривать и редактировать любые курсы/уроки, но не могут их создавать или удалять.
-- **Владельцы**: Полный доступ (CRUD) к своим объектам.
-- **Обычные пользователи**: Просмотр доступен только после авторизации. Профиль другого пользователя отображается в сокращенном виде.
+### Тестирование
+```bash
+poetry run coverage run --source='.' manage.py test
+poetry run coverage report
+```
+### Права доступа (Permissions)
+- **Модераторы:** Могут просматривать и редактировать любые курсы/уроки, но не могут их создавать или удалять.
 
-## Автоматические задачи
-- **deactivate_inactive_users**: Каждый день в 03:00 деактивирует пользователей, которые не заходили в систему более 30 дней.
-- **four_hours_notification**: Раз в 30 минут проверяет обновления курсов и рассылает уведомления подписчикам (не чаще чем раз в 4 часа для одного курса).
+- **Владельцы:** Полный доступ (CRUD) к своим объектам.
+
+- **Обычные пользователи:** Просмотр доступен только после авторизации. Профиль другого пользователя отображается в сокращенном виде.
+
+### Автоматические задачи
+- **deactivate_inactive_users:** Каждый день в 03:00 деактивирует пользователей, которые не заходили в систему более 30 дней.
+
+- **four_hours_notification:** Раз в 30 минут проверяет обновления курсов и рассылает уведомления подписчикам (не чаще чем раз в 4 часа для одного курса).
 
 ## Деплой и CI/CD
-
-В проекте настроена автоматизация через GitHub Actions. При каждом пуше в ветку `main` запускается процесс проверки кода, тестирования и автоматического деплоя на удаленный сервер.
+В проекте настроена автоматизация через GitHub Actions. При каждом пуше в ветку main запускается процесс проверки кода, тестирования и автоматического деплоя на удаленный сервер.
 
 ### Настройка удаленного сервера (Ubuntu/Debian)
+**Установите Docker и Docker Compose:**
 
-1.  **Установите Docker и Docker Compose:**
-    ```bash
-    sudo apt update
-    sudo apt install docker.io docker-compose -y
-    sudo systemctl enable --now docker
-    ```
-2.  **Подготовьте директорию проекта:**
-    Создайте папку, указанную в `DEPLOY_DIR` (например, `/home/username/coursestream`), и разместите там файлы `docker-compose.yml` и конфигурацию `nginx/nginx.conf`.
-3.  **Настройте `.env` на сервере:**
-    Создайте файл `.env` в директории проекта на сервере и заполните его боевыми значениями.
+```bash
+sudo apt update
+sudo apt install docker.io docker-compose -y
+sudo systemctl enable --now docker
+```
+### Подготовьте директорию проекта:
+Создайте папку, указанную в **DEPLOY_DIR** (например, /home/username/coursestream), и разместите там файлы docker-compose.yml и конфигурацию nginx/nginx.conf.
+
+### Настройте .env на сервере:
+Создайте файл **.env** в директории проекта и заполните его боевыми значениями.
 
 ### Настройка GitHub Secrets
 
@@ -170,4 +230,4 @@ poetry run coverage run --source='.' manage.py test poetry run coverage report
 ```bash
 docker compose pull
 docker compose up -d --remove-orphans
-
+```
