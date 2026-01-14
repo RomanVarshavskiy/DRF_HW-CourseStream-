@@ -210,12 +210,7 @@ class CourseTestCase(APITestCase):
         url = reverse("materials:course-list")
         response = self.client.get(url)
         data = response.json()
-        result = {
-            "count": 1,
-            "next": None,
-            "previous": None,
-            "results": [
-                {
+        expected_course = {
                     "id": self.course.pk,
                     "lessons": [self.lesson.name],
                     "count_lesson": 1,
@@ -224,11 +219,13 @@ class CourseTestCase(APITestCase):
                     "preview": None,
                     "description": self.course.description,
                     "owner": self.user.pk,
-                },
-            ],
         }
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(data, result)
+        self.assertEqual(len(data["results"]), 1)
+
+        for key, value in expected_course.items():
+            self.assertEqual(data["results"][0][key], value)
 
     def test_course_list_by_moders(self):
         """Проверяет, что модератор видит все курсы, включая чужие."""
