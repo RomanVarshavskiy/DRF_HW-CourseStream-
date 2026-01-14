@@ -104,7 +104,7 @@ jobs:
           POSTGRES_PASSWORD: test_pass
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
-        6run: poetry run python manage.py test
+        run: poetry run python manage.py test
 
 
   build:
