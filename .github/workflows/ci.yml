@@ -72,10 +72,14 @@ jobs:
         run: poetry install --no-root
 
       - name: Run migrations
-        run: poetry run python manage.py migrate
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          run: poetry run python manage.py migrate
 
       - name: Run tests
-        run: poetry run python manage.py test
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          run: poetry run python manage.py test
 
 
   build:
